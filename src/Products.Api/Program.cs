@@ -15,6 +15,9 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
     options.UseSqlite("Data Source=products.db"));
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=products.db"));
+
 // Add GraphQL
 builder.Services
     .AddGraphQLServer()

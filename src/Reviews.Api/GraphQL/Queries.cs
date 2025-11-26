@@ -1,5 +1,4 @@
 using HotChocolate.Data;
-using Microsoft.EntityFrameworkCore;
 using Reviews.Api.Data;
 using Reviews.Api.Models;
 
@@ -8,11 +7,11 @@ namespace Reviews.Api.GraphQL;
 public class Queries
 {
     [UsePaging]
+    [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public IQueryable<Review> GetReviews([Service] IDbContextFactory<AppDbContext> contextFactory)
+    public IQueryable<Review> GetReviews([Service] AppDbContext context)
     {
-        using var context = contextFactory.CreateDbContext();
-        return context.Reviews.AsNoTracking();
+        return context.Reviews;
     }
 }

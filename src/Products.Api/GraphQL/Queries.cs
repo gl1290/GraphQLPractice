@@ -1,5 +1,4 @@
 using HotChocolate.Data;
-using Microsoft.EntityFrameworkCore;
 using Products.Api.Data;
 using Products.Api.Models;
 
@@ -8,20 +7,20 @@ namespace Products.Api.GraphQL;
 public class Queries
 {
     [UsePaging]
+    [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public IQueryable<Product> GetProducts([Service] IDbContextFactory<AppDbContext> contextFactory)
+    public IQueryable<Product> GetProducts([Service] AppDbContext context)
     {
-        using var context = contextFactory.CreateDbContext();
-        return context.Products.AsNoTracking();
+        return context.Products;
     }
 
     [UsePaging]
+    [UseProjection]
     [UseFiltering]
     [UseSorting]
-    public IQueryable<Category> GetCategories([Service] IDbContextFactory<AppDbContext> contextFactory)
+    public IQueryable<Category> GetCategories([Service] AppDbContext context)
     {
-        using var context = contextFactory.CreateDbContext();
-        return context.Categories.AsNoTracking();
+        return context.Categories;
     }
 }
