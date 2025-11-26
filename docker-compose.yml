@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  products:
+    build:
+      context: .
+      dockerfile: src/Products.Api/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5001
+    networks:
+      - graphql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  reviews:
+    build:
+      context: .
+      dockerfile: src/Reviews.Api/Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5002
+    networks:
+      - graphql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - PRODUCTS_URL=http://products:5001/graphql
+      - REVIEWS_URL=http://reviews:5002/graphql
+    networks:
+      - graphql-network
+    depends_on:
+      products:
+        condition: service_healthy
+      reviews:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/graphql"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  graphql-network:
+    driver: bridge
