@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Products.Api.Data;
 using Products.Api.GraphQL;
 using Products.Api.Seed;
+using Products.Api.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,15 +12,9 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(5001);
 });
 
-// Add DbContext with SQLite
-builder.Services.AddPooledDbContextFactory<AppDbContext>(options =>
-    options.UseSqlite("Data Source=products.db"));
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=products.db"));
-
 // Add GraphQL
 builder.Services
+    .AddServices()
     .AddGraphQLServer()
     .AddQueryType<Queries>()
     .AddMutationType<Mutations>()
@@ -29,7 +24,8 @@ builder.Services
     .AddFiltering()
     .AddSorting()
     .AddProjections()
-    .AddInMemorySubscriptions();
+    .AddInMemorySubscriptions()
+    .AddType<ProductType>();
 
 var app = builder.Build();
 

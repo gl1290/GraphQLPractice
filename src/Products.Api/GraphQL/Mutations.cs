@@ -7,13 +7,21 @@ namespace Products.Api.GraphQL;
 
 public class Mutations
 {
+    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly ILogger<Mutations> _logger;
+
+    public Mutations(IDbContextFactory<AppDbContext> contextFactory, ILogger<Mutations> logger)
+    {
+        _contextFactory = contextFactory;
+        _logger = logger;
+    }
+
     public async Task<AddProductPayload> AddProduct(
         AddProductInput input,
-        [Service] IDbContextFactory<AppDbContext> contextFactory,
         [Service] ITopicEventSender eventSender,
         CancellationToken cancellationToken)
     {
-        using var context = contextFactory.CreateDbContext();
+        using var context = _contextFactory.CreateDbContext();
         
         var product = new Product
         {
@@ -34,14 +42,14 @@ public class Mutations
 
     public async Task<UpdateProductPayload> UpdateProduct(
         UpdateProductInput input,
-        [Service] IDbContextFactory<AppDbContext> contextFactory,
         CancellationToken cancellationToken)
     {
-        using var context = contextFactory.CreateDbContext();
+        using var context = _contextFactory.CreateDbContext();
         
         var product = await context.Products.FindAsync(new object[] { input.Id }, cancellationToken);
         if (product is null)
         {
+            _logger.LogError("Product with ID {ProductId} not found for update", input.Id);
             throw new Exception($"Product with ID {input.Id} not found");
         }
 
@@ -69,6 +77,7 @@ public class Mutations
         var product = await context.Products.FindAsync(new object[] { id }, cancellationToken);
         if (product is null)
         {
+            _logger.LogError("Product with ID {ProductId} not found for deletion", id);
             throw new Exception($"Product with ID {id} not found");
         }
 
